@@ -1,20 +1,40 @@
 package com.example.shaderincompose
 
-import android.graphics.Color
+import android.graphics.RenderEffect
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Canvas
+import androidx.compose.animation.core.RepeatMode.Reverse
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.asComposeRenderEffect
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.shaderincompose.phase2.GRADIENT_SHADER
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
+import com.example.shaderincompose.phase3.PIXELATE_SHADER
 import com.example.shaderincompose.ui.theme.ShaderInComposeTheme
 
 class MainActivity : ComponentActivity() {
@@ -23,21 +43,51 @@ class MainActivity : ComponentActivity() {
     enableEdgeToEdge()
     setContent {
       ShaderInComposeTheme {
+        val blockSize = 10.dp
+        var size by remember { mutableStateOf(Size(0f, 0f)) }
+
+        val transition = rememberInfiniteTransition(label = "progress_transition")
+        val progress by transition.animateFloat(
+          initialValue = 0f,
+          targetValue = 1f,
+          animationSpec = infiniteRepeatable(
+            animation = keyframes {
+              durationMillis = 5000
+            },
+            repeatMode = Reverse,
+          ),
+          label = "progress",
+        )
+
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-          Canvas(
+          Box(
             modifier = Modifier
               .fillMaxSize()
-              .padding(innerPadding)
+              .padding(innerPadding),
+            contentAlignment = Alignment.Center,
           ) {
-            drawRect(
-              brush = ShaderBrush(
-                GRADIENT_SHADER.apply {
-                  // Set the Shader parameters
-                  setColorUniform("startColor", Color.BLUE)
-                  setColorUniform("endColor", Color.RED)
-                  setFloatUniform("width", size.width)
-                }
-              )
+            Image(
+              modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1.3f)
+                .onSizeChanged { size = it.toSize() }
+                .graphicsLayer {
+                  PIXELATE_SHADER.apply {
+                    setFloatUniform("progress", progress)
+                    setFloatUniform("blockSize", blockSize.toPx())
+                    setFloatUniform("resolution", size.width, size.height)
+                  }
+                  renderEffect = RenderEffect
+                    .createRuntimeShaderEffect(
+                      PIXELATE_SHADER,
+                      "texture",
+                    )
+                    .asComposeRenderEffect()
+                  clip = true
+                },
+              painter = painterResource(R.drawable.cat),
+              contentDescription = null,
+              contentScale = ContentScale.Crop,
             )
           }
         }
