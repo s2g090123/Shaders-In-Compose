@@ -32,6 +32,7 @@ class MainActivity : ComponentActivity() {
             drawRect(
               brush = ShaderBrush(
                 GRADIENT_SHADER.apply {
+                  // Set the Shader parameters
                   setColorUniform("startColor", Color.BLUE)
                   setColorUniform("endColor", Color.RED)
                   setFloatUniform("width", size.width)
