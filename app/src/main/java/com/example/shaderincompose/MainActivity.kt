@@ -1,5 +1,6 @@
 package com.example.shaderincompose
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,7 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.shaderincompose.phase1.COLOR_SHADER
+import com.example.shaderincompose.phase2.GRADIENT_SHADER
 import com.example.shaderincompose.ui.theme.ShaderInComposeTheme
 
 class MainActivity : ComponentActivity() {
@@ -29,7 +30,13 @@ class MainActivity : ComponentActivity() {
               .padding(innerPadding)
           ) {
             drawRect(
-              brush = ShaderBrush(COLOR_SHADER) // // Create a brush using RuntimeShader
+              brush = ShaderBrush(
+                GRADIENT_SHADER.apply {
+                  setColorUniform("startColor", Color.BLUE)
+                  setColorUniform("endColor", Color.RED)
+                  setFloatUniform("width", size.width)
+                }
+              )
             )
           }
         }
