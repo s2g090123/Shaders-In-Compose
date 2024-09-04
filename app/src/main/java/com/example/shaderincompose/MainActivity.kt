@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
               .padding(innerPadding)
           ) {
             drawRect(
-              brush = ShaderBrush(COLOR_SHADER)
+              brush = ShaderBrush(COLOR_SHADER) // // Create a brush using RuntimeShader
             )
           }
         }
