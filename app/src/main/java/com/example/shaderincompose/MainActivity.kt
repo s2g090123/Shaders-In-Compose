@@ -1,6 +1,5 @@
 package com.example.shaderincompose
 
-import android.graphics.RenderEffect
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -26,15 +25,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.asComposeRenderEffect
+import androidx.compose.ui.graphics.BlurEffect
+import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
-import com.example.shaderincompose.phase3.PIXELATE_SHADER
 import com.example.shaderincompose.ui.theme.ShaderInComposeTheme
 
 class MainActivity : ComponentActivity() {
@@ -43,7 +41,6 @@ class MainActivity : ComponentActivity() {
     enableEdgeToEdge()
     setContent {
       ShaderInComposeTheme {
-        val blockSize = 10.dp
         var size by remember { mutableStateOf(Size(0f, 0f)) }
 
         val transition = rememberInfiniteTransition(label = "progress_transition")
@@ -72,18 +69,11 @@ class MainActivity : ComponentActivity() {
                 .aspectRatio(1.3f)
                 .onSizeChanged { size = it.toSize() }
                 .graphicsLayer {
-                  PIXELATE_SHADER.apply {
-                    setFloatUniform("progress", progress)
-                    setFloatUniform("blockSize", blockSize.toPx())
-                    setFloatUniform("resolution", size.width, size.height)
-                  }
-                  renderEffect = RenderEffect
-                    .createRuntimeShaderEffect(
-                      PIXELATE_SHADER,
-                      "texture",
-                    )
-                    .asComposeRenderEffect()
-                  clip = true
+                  renderEffect = BlurEffect(
+                    radiusX = (size.width / 2f * progress).coerceAtLeast(0.0001f),
+                    radiusY = (size.height / 2f * progress).coerceAtLeast(0.0001f),
+                    edgeTreatment = TileMode.Decal,
+                  )
                 },
               painter = painterResource(R.drawable.cat),
               contentDescription = null,
